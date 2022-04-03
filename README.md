@@ -19,3 +19,6 @@
 ![image](./doc/error.png)
 
 那你可能需要安装[Visual C++ Redistributable Packages for Visual Studio 2013](https://www.microsoft.com/zh-CN/download/details.aspx?id=40784)
+
+### 如果你是centos只pip3 install pyzbar的话会报错 (by @SlightDust #1)
+需要`yum install zbar-devel`一下即可
