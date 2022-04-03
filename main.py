@@ -1,9 +1,11 @@
 import asyncio
+import os
 from io import BytesIO
 from pathlib import Path
 
 import pyzbar.pyzbar as pyzbar
-from hoshino import Message, MessageSegment, Service, aiorequests, get_bot, priv
+from hoshino import (Message, MessageSegment, Service, aiorequests, get_bot,
+                     priv)
 from PIL import Image, ImageEnhance
 from pyzbar import pyzbar
 
@@ -87,8 +89,8 @@ async def read_img(message: Message):
     for img_data in imgs:
         cq_img_info = await bot.get_image(file=img_data["file"])
         file = cache["coolq_directory"] / cq_img_info["file"]
-        if file.suffix == ".image":
-            aio_cor.append(aio_image(img_data["url"], cq_img_info["filename"]))
+        if file.suffix == ".image" or os.path.getsize(file) == 0:
+            aio_cor.append(aio_image(img_data["url"], Path(img_data["file"]).stem))
         else:
             for data in decode(file):
                 yield data
