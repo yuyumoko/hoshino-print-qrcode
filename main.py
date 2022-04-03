@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pyzbar.pyzbar as pyzbar
 from hoshino import Message, MessageSegment, Service, aiorequests, get_bot, priv
-from PIL import Image
+from PIL import Image, ImageEnhance
 from pyzbar import pyzbar
 
 sv_help = """
@@ -25,14 +25,24 @@ bot = get_bot()
 cache = {"coolq_directory": "", "self_info": None}
 
 
+def image_enhance(im):
+    if im.format == "GIF":
+        im = im.convert("RGB")
+    im = ImageEnhance.Brightness(im).enhance(2.0)
+    return im
+
+
 def decode(file):
+
     if isinstance(file, bytes):
-        barcodes = pyzbar.decode(Image.open(BytesIO(file)))
+        img = Image.open(BytesIO(file))
+        barcodes = pyzbar.decode(image_enhance(img))
         for barcode in barcodes:
             yield barcode.data.decode("utf-8")
     else:
         with file.open("rb") as f:
-            barcodes = pyzbar.decode(Image.open(f))
+            img = Image.open(f)
+            barcodes = pyzbar.decode(image_enhance(img))
             for barcode in barcodes:
                 yield barcode.data.decode("utf-8")
 
