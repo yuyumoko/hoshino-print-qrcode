@@ -4,10 +4,9 @@ from io import BytesIO
 from pathlib import Path
 
 import pyzbar.pyzbar as pyzbar
-from hoshino import (Message, MessageSegment, Service, aiorequests, get_bot,
-                     priv)
+from hoshino import Message, MessageSegment, Service, aiorequests, get_bot, priv
 from PIL import Image, ImageEnhance
-from pyzbar import pyzbar
+
 
 sv_help = """
 发二维码的能不能照顾一下PC端
