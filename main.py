@@ -3,7 +3,7 @@ import os
 from io import BytesIO
 from pathlib import Path
 
-import pyzbar.pyzbar as pyzbar
+from pyzbar import pyzbar
 from hoshino import Message, MessageSegment, Service, aiorequests, get_bot, priv
 from PIL import Image, ImageEnhance
 
