@@ -29,23 +29,31 @@ cache = {"coolq_directory": "", "self_info": None}
 def image_enhance(im):
     if im.format == "GIF":
         im = im.convert("RGB")
-    im = ImageEnhance.Brightness(im).enhance(2.0)
-    return im
+    eim = ImageEnhance.Brightness(im).enhance(2.0)
+
+    return im, eim
+
+
+def decoded_list(barcodes):
+    result = set()
+    for code in barcodes:
+        result.add(code.data.decode("utf-8"))
+    return result
 
 
 def decode(file):
 
     if isinstance(file, bytes):
         img = Image.open(BytesIO(file))
-        barcodes = pyzbar.decode(image_enhance(img))
-        for barcode in barcodes:
-            yield barcode.data.decode("utf-8")
+        im, eim = image_enhance(img)
+        for barcode in decoded_list(pyzbar.decode(im) + pyzbar.decode(eim)):
+            yield barcode
     else:
         with file.open("rb") as f:
             img = Image.open(f)
-            barcodes = pyzbar.decode(image_enhance(img))
-            for barcode in barcodes:
-                yield barcode.data.decode("utf-8")
+            im, eim = image_enhance(img)
+            for barcode in decoded_list(pyzbar.decode(im) + pyzbar.decode(eim)):
+                yield barcode
 
 
 async def aio_image(url, md5):
