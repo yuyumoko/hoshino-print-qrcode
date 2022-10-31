@@ -4,7 +4,8 @@ from io import BytesIO
 from pathlib import Path
 
 from pyzbar import pyzbar
-from hoshino import Message, MessageSegment, Service, aiorequests, get_bot, priv
+from hoshino import Service, aiorequests, get_bot, priv
+from nonebot import Message, MessageSegment
 from PIL import Image, ImageEnhance
 
 
@@ -13,7 +14,7 @@ sv_help = """
 """.strip()
 
 sv = Service(
-    name="pqrcode",  # 功能名
+    name="被动-反二维码",  # 功能名
     use_priv=priv.NORMAL,  # 使用权限
     manage_priv=priv.ADMIN,  # 管理权限
     visible=True,  # 可见性
