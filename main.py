@@ -1,5 +1,4 @@
 import asyncio
-import os
 from io import BytesIO
 from pathlib import Path
 
@@ -24,7 +23,7 @@ sv = Service(
 )
 
 bot = get_bot()
-cache = {"coolq_directory": "", "self_info": None}
+cache = {"self_info": None}
 
 
 def image_enhance(im):
@@ -58,16 +57,20 @@ def decode(file):
 
 
 async def aio_image(url, md5):
-    # print(f"正在获取 {md5}")
-    req = await aiorequests.get(url)
-    file = await req.content
-    if file:
-        return file
-    else:
+    if url:
+        try:
+            req = await aiorequests.get(url)
+            file = await req.content
+            if file:
+                return file
+        except Exception:
+            pass
+    try:
         base_url = "http://gchat.qpic.cn/gchatpic_new/0/0-0-%s/0?term=2"
         req = await aiorequests.get(base_url % md5.upper())
-        file = await req.content
-        return file
+        return await req.content
+    except Exception:
+        return b""
 
 
 async def handle_forward_msg(forward_list):
@@ -92,21 +95,19 @@ async def process_img(message):
 
 
 async def read_img(message: Message):
+    # 不用 get_image + coolq_directory 拼本地缓存路径：那是 go-cqhttp 的做法，
+    # NapCat/QQNT 的 get_version_info 没有 coolq_directory 字段（KeyError 根因）。
+    # 直接用消息段 url 下载（gchatpic MD5 兜底），go-cqhttp 下同样可用。
     aio_cor = []
     imgs = await process_img(message)
     for img_data in imgs:
-        cq_img_info = await bot.get_image(file=img_data["file"])
-        file = cache["coolq_directory"] / cq_img_info["file"]
-        if file.suffix == ".image" or os.path.getsize(file) == 0:
-            aio_cor.append(aio_image(img_data["url"], Path(img_data["file"]).stem))
-        else:
-            for data in decode(file):
-                yield data
+        aio_cor.append(aio_image(img_data.get("url"), Path(img_data.get("file", "")).stem))
 
-    if aio_cor:
-        for raw in await asyncio.gather(*aio_cor):
-            for data in decode(raw):
-                yield data
+    for raw in await asyncio.gather(*aio_cor):
+        if not raw:
+            continue
+        for data in decode(raw):
+            yield data
 
 
 def add_forward_msg(msg):
@@ -125,10 +126,6 @@ def add_forward_msg(msg):
 @sv.on_message("group")
 async def on_input_chara_name(bot, ev):
     forward_msg_list = []
-
-    if not cache["coolq_directory"]:
-        cq_info = await bot.get_version_info()
-        cache["coolq_directory"] = Path(cq_info["coolq_directory"])
 
     if not cache["self_info"]:
         self_info = await bot.get_login_info()
